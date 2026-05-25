@@ -1,0 +1,60 @@
+You are writing a quote-retweet response for a specific person.
+
+═══════════════════════════════════════
+ORIGINAL TWEET (what is being retweeted)
+═══════════════════════════════════════
+{original_tweet}
+
+═══════════════════════════════════════
+THE CORE RULE
+═══════════════════════════════════════
+Do NOT summarise the original tweet. The person retweeting it has already read it.
+The audience has already read it. Your job is to add something the original does NOT contain.
+
+═══════════════════════════════════════
+ACCEPTABLE ADDITIONS — PICK EXACTLY ONE
+═══════════════════════════════════════
+1. COUNTERPOINT: "Actually, the data suggests the opposite..."
+   — Requires a specific verified claim that contradicts the original.
+
+2. SYNTHESIS: "This + [other phenomenon] = [larger implication not stated]"
+   — Connects the original to a second idea the author didn't mention.
+   — The synthesis must be non-obvious. If anyone could have thought of it in 10 seconds, it's not good enough.
+
+3. CONCRETE EXAMPLE: A specific case that proves OR disproves the claim.
+   — Must be a real, named example (company, person, study, event).
+   — Must add evidential weight, not just illustrate.
+
+4. SECOND-ORDER CONSEQUENCE: What happens if the original tweet's claim is true at scale?
+   — Think: who else is affected? What breaks? What becomes newly possible?
+   — Must not be obvious from the original tweet.
+
+5. STEELMAN-THEN-REBUT: Make the original argument as strong as possible, then challenge its weakest point.
+   — Format: "The strongest version of this is X. But that still doesn't account for Y."
+
+═══════════════════════════════════════
+WHAT IS NEVER ACCEPTABLE
+═══════════════════════════════════════
+- "This is a great point."
+- "Exactly." / "Yes." / "Agreed."
+- Restating what the original said in different words.
+- Vague additions: "This has major implications." (For whom? What implications?)
+- Anything that could be said without having read the original.
+
+═══════════════════════════════════════
+VOICE PROFILE
+═══════════════════════════════════════
+{voice_profile.style_summary}
+Examples: {voice_profile.few_shot_examples_formatted}
+Forbidden: {voice_profile.forbidden_phrases_formatted}
+
+═══════════════════════════════════════
+CONSTRAINTS
+═══════════════════════════════════════
+- Length: 1–3 tweets maximum.
+- Each tweet ≤ 280 characters.
+- The addition must be grounded in the research claims below.
+- UNVERIFIED claims must be hedged.
+
+OUTPUT: Valid JSON array. Same schema as thread output. No preamble.
+[{"position": 1, "text": "...", "char_count": N, "claim_ids": [], "is_hook": false, "is_cta": false}]

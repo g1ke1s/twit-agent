@@ -1,0 +1,307 @@
+{
+  "run_id": "trace-001-demo",
+  "user_id": "demo",
+  "topic": "Why Andreessen Horowitz is wrong about AI replacing software engineers",
+  "output_type": "x_thread",
+  "trace_events": [
+    {
+      "node": "input_router",
+      "model": "none",
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "duration_ms": 12.4,
+      "detail": "Detected input_type=instruction, output_type=x_thread",
+      "timestamp": "2024-01-15T10:00:00.000Z"
+    },
+    {
+      "node": "voice_loader",
+      "model": "cache",
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "duration_ms": 8.1,
+      "detail": "Loaded cached VoiceProfile for user demo",
+      "timestamp": "2024-01-15T10:00:00.012Z"
+    },
+    {
+      "node": "researcher",
+      "model": "tavily+exa+hn+arxiv",
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "duration_ms": 3841.2,
+      "detail": "Collected 8 sources (18420 chars context)",
+      "timestamp": "2024-01-15T10:00:00.020Z"
+    },
+    {
+      "node": "analyst",
+      "model": "deepseek-r1+llama-3.3-70b+gemini-flash",
+      "prompt_tokens": 4200,
+      "completion_tokens": 1800,
+      "duration_ms": 8920.5,
+      "detail": "Extracted 6 claims (4 verified)",
+      "timestamp": "2024-01-15T10:00:03.861Z"
+    },
+    {
+      "node": "hook_generator",
+      "model": "gemini-2.0-flash-exp",
+      "prompt_tokens": 1200,
+      "completion_tokens": 900,
+      "duration_ms": 2341.8,
+      "detail": "Generated 12 hooks → top 4 selected",
+      "timestamp": "2024-01-15T10:00:12.781Z"
+    },
+    {
+      "node": "writer",
+      "model": "gemini-flash+qwen-72b+llama-70b→moa",
+      "prompt_tokens": 6800,
+      "completion_tokens": 3200,
+      "duration_ms": 14203.6,
+      "detail": "iteration=1, output_type=x_thread, drafts=3",
+      "timestamp": "2024-01-15T10:00:15.123Z"
+    },
+    {
+      "node": "critic",
+      "model": "gemini-flash+mistral-small+llama-8b",
+      "prompt_tokens": 3100,
+      "completion_tokens": 1400,
+      "duration_ms": 5812.3,
+      "detail": "avg=6.80 hook=7.0 voice=6.5 density=7.2 clarity=6.5 verdict=rewrite iteration=1",
+      "timestamp": "2024-01-15T10:00:29.326Z"
+    },
+    {
+      "node": "writer",
+      "model": "gemini-flash+qwen-72b+llama-70b→moa",
+      "prompt_tokens": 7400,
+      "completion_tokens": 3400,
+      "duration_ms": 15891.4,
+      "detail": "iteration=2, output_type=x_thread, drafts=3",
+      "timestamp": "2024-01-15T10:00:35.138Z"
+    },
+    {
+      "node": "critic",
+      "model": "gemini-flash+mistral-small+llama-8b",
+      "prompt_tokens": 3100,
+      "completion_tokens": 1400,
+      "duration_ms": 5204.7,
+      "detail": "avg=8.10 hook=8.5 voice=8.0 density=8.2 clarity=7.7 verdict=approve iteration=2",
+      "timestamp": "2024-01-15T10:00:51.029Z"
+    },
+    {
+      "node": "validator_gate",
+      "model": "human",
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "duration_ms": 47823.0,
+      "detail": "decision=edit",
+      "timestamp": "2024-01-15T10:00:56.233Z"
+    },
+    {
+      "node": "formatter",
+      "model": "mistral-small",
+      "prompt_tokens": 800,
+      "completion_tokens": 400,
+      "duration_ms": 1820.1,
+      "detail": "output_type=x_thread wc=None",
+      "timestamp": "2024-01-15T10:01:44.056Z"
+    },
+    {
+      "node": "distributor",
+      "model": "none",
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "duration_ms": 43.2,
+      "detail": "run_id=trace-001-demo persisted",
+      "timestamp": "2024-01-15T10:01:45.876Z"
+    }
+  ],
+  "sources": [
+    {
+      "url": "https://a16z.com/ai-software-engineers/",
+      "title": "The End of Software Engineering as We Know It",
+      "source_type": "web",
+      "credibility_score": 9.0,
+      "claim_ids": ["claim-001", "claim-002"]
+    },
+    {
+      "url": "https://arxiv.org/abs/2401.12345",
+      "title": "Measuring AI Code Generation Accuracy on Real-World Tasks",
+      "source_type": "arxiv",
+      "credibility_score": 8.5,
+      "claim_ids": ["claim-003"]
+    },
+    {
+      "url": "https://news.ycombinator.com/item?id=38901234",
+      "title": "Show HN: Devin failed on 73% of real production tasks",
+      "source_type": "hn",
+      "credibility_score": 7.5,
+      "claim_ids": ["claim-004"]
+    }
+  ],
+  "claims": [
+    {
+      "id": "claim-001",
+      "text": "A16Z predicts 90% of code will be written by AI by 2026",
+      "source_url": "https://a16z.com/ai-software-engineers/",
+      "verified": true,
+      "surprise_score": 6.5,
+      "contradiction_flag": false
+    },
+    {
+      "id": "claim-002",
+      "text": "Software engineer job postings are up 18% YoY despite AI coding tools",
+      "source_url": "https://a16z.com/ai-software-engineers/",
+      "verified": true,
+      "surprise_score": 8.8,
+      "contradiction_flag": true
+    },
+    {
+      "id": "claim-003",
+      "text": "AI code generation accuracy drops to 34% on tasks requiring >3 file changes",
+      "source_url": "https://arxiv.org/abs/2401.12345",
+      "verified": true,
+      "surprise_score": 9.2,
+      "contradiction_flag": false
+    },
+    {
+      "id": "claim-004",
+      "text": "Autonomous AI agents fail on 73% of real production debugging tasks",
+      "source_url": "https://news.ycombinator.com/item?id=38901234",
+      "verified": true,
+      "surprise_score": 8.5,
+      "contradiction_flag": false
+    }
+  ],
+  "hook_variants": [
+    {
+      "text": "AI will write 90% of code by 2026, says a16z. Meanwhile, engineering job postings are up 18% YoY. Someone is wrong.",
+      "pattern": "counterintuitive",
+      "score": 9.1,
+      "reasoning": "Creates immediate contradiction. Reader must resolve the tension."
+    },
+    {
+      "text": "34%. That's how accurate AI code generation is when a task requires touching more than 3 files.",
+      "pattern": "specific_number",
+      "score": 8.7,
+      "reasoning": "Surprising statistic directly from research. Creates credibility and tension."
+    }
+  ],
+  "draft_iteration_1": [
+    {
+      "position": 1,
+      "text": "The AI will replace software engineers narrative is the most confidently wrong prediction in tech right now. Here's the data they're ignoring:",
+      "char_count": 154,
+      "claim_ids": [],
+      "is_hook": true,
+      "is_cta": false
+    },
+    {
+      "position": 2,
+      "text": "A16Z says 90% of code will be written by AI by 2026. Bold claim. But engineering job postings are up 18% YoY — even as Copilot, Cursor, and Devin have all shipped.",
+      "char_count": 165,
+      "claim_ids": ["claim-001", "claim-002"],
+      "is_hook": false,
+      "is_cta": false
+    }
+  ],
+  "critique_iteration_1": {
+    "hook_strength": 7.0,
+    "voice_match": 6.5,
+    "insight_density": 7.2,
+    "clarity": 6.5,
+    "hallucination_flags": [],
+    "cliche_flags": ["narrative"],
+    "average_score": 6.80,
+    "rewrite_instructions": "Tweet 1: 'narrative' is a cliché in tech writing. Replace with the specific data upfront. Try the counterintuitive hook: '90% of code written by AI by 2026 — that's the a16z prediction. Engineering job postings are up 18% YoY. Someone is confidently wrong.' Voice match: the person's examples show they open with numbers, not with meta-commentary about narratives.",
+    "verdict": "rewrite"
+  },
+  "draft_iteration_2": [
+    {
+      "position": 1,
+      "text": "AI will write 90% of code by 2026, says a16z. Meanwhile, engineering job postings are up 18% YoY. Someone is wrong. It's a16z. Here's why:",
+      "char_count": 143,
+      "claim_ids": ["claim-001", "claim-002"],
+      "is_hook": true,
+      "is_cta": false
+    },
+    {
+      "position": 2,
+      "text": "The 90% claim assumes AI can handle production-grade complexity. The data says otherwise. AI code generation accuracy drops to 34% when a task requires changing more than 3 files. Most real bugs require touching 5-10.",
+      "char_count": 216,
+      "claim_ids": ["claim-003"],
+      "is_hook": false,
+      "is_cta": false
+    },
+    {
+      "position": 3,
+      "text": "Devin, the most hyped autonomous coding agent, fails on 73% of real production debugging tasks. Not toy benchmarks. Real repos. Real bugs.",
+      "char_count": 145,
+      "claim_ids": ["claim-004"],
+      "is_hook": false,
+      "is_cta": false
+    },
+    {
+      "position": 4,
+      "text": "Why the gap between the hype and the data? a16z is measuring token generation speed. Engineering is measured in system comprehension — understanding 200k lines of context, implicit contracts, deployment risk.",
+      "char_count": 200,
+      "claim_ids": [],
+      "is_hook": false,
+      "is_cta": false
+    },
+    {
+      "position": 5,
+      "text": "AI is genuinely transforming how engineers work. The 10x developer is real — but it's a human engineer using AI tools, not an AI replacing the engineer.",
+      "char_count": 156,
+      "claim_ids": [],
+      "is_hook": false,
+      "is_cta": false
+    },
+    {
+      "position": 6,
+      "text": "The job postings number is the tell. Companies are hiring more engineers because AI reduces the cost of shipping — which expands what's worth building, which creates more demand for engineers who can think about systems.",
+      "char_count": 218,
+      "claim_ids": ["claim-002"],
+      "is_hook": false,
+      "is_cta": false
+    },
+    {
+      "position": 7,
+      "text": "If you're a founder: hire engineers who use AI. Don't replace engineers with AI. The ones who understand both will build circles around the teams who picked a side.",
+      "char_count": 163,
+      "claim_ids": [],
+      "is_hook": false,
+      "is_cta": true
+    },
+    {
+      "position": 8,
+      "text": "What's your read — will the 10x developer model hold for the next 5 years, or is there an inflection point we're not seeing yet?",
+      "char_count": 128,
+      "claim_ids": [],
+      "is_hook": false,
+      "is_cta": true
+    }
+  ],
+  "critique_iteration_2": {
+    "hook_strength": 8.5,
+    "voice_match": 8.0,
+    "insight_density": 8.2,
+    "clarity": 7.7,
+    "hallucination_flags": [],
+    "cliche_flags": [],
+    "average_score": 8.10,
+    "rewrite_instructions": "",
+    "verdict": "approve"
+  },
+  "validation": {
+    "run_id": "trace-001-demo",
+    "decision": "edit",
+    "human_edits": "AI will write 90% of code by 2026, says a16z. Engineering job postings are up 18% YoY. Someone is wrong — and the data makes it obvious.\nThe 90% claim assumes AI can handle production-grade complexity. Reality: AI code generation accuracy drops to 34% when a task requires changing more than 3 files.\nDevin fails on 73% of real production debugging tasks. Not toy benchmarks. Real repos. Real bugs. Real consequences.\nWhy the gap? a16z is measuring token generation speed. Engineering is measured in system comprehension — 200k lines of context, implicit contracts, deployment risk. Those aren't the same thing.\nAI is genuinely transforming how engineers work. The 10x developer is real. But it's a human engineer using AI tools, not AI replacing the human.\nThe job postings number is the tell: more AI tools → lower cost of shipping → more worth building → more demand for engineers who can think at the systems level.\nHire engineers who use AI. Don't replace engineers with AI.\nWhat's your read — will the 10x developer model hold, or is there an inflection point we're not seeing?",
+    "rejection_note": null,
+    "human_edit_diff": "Tweet 1: Added '— and the data makes it obvious' for stronger payoff. Tweet 4: Changed 'understanding 200k lines' to '200k lines of context' (tighter). Tweet 7: Removed 'The ones who understand both will build circles around...' — too prescriptive.",
+    "timestamp": "2024-01-15T10:01:04.000Z"
+  },
+  "voice_similarity_scores": {
+    "iteration_1": 0.61,
+    "iteration_2": 0.79,
+    "final_approved": 0.84
+  },
+  "final_output": "AI will write 90% of code by 2026, says a16z. Engineering job postings are up 18% YoY. Someone is wrong — and the data makes it obvious.\n\nThe 90% claim assumes AI can handle production-grade complexity. Reality: AI code generation accuracy drops to 34% when a task requires changing more than 3 files.\n\nDevin fails on 73% of real production debugging tasks. Not toy benchmarks. Real repos. Real bugs. Real consequences.\n\nWhy the gap? a16z is measuring token generation speed. Engineering is measured in system comprehension — 200k lines of context, implicit contracts, deployment risk. Those aren't the same thing.\n\nAI is genuinely transforming how engineers work. The 10x developer is real. But it's a human engineer using AI tools, not AI replacing the human.\n\nThe job postings number is the tell: more AI tools → lower cost of shipping → more worth building → more demand for engineers who can think at the systems level.\n\nHire engineers who use AI. Don't replace engineers with AI.\n\nWhat's your read — will the 10x developer model hold, or is there an inflection point we're not seeing?"
+}
