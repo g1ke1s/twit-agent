@@ -1,4 +1,4 @@
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API = "https://web-production-a6b67.up.railway.app";
 
 export async function apiFetch(path, options = {}) {
   const res = await fetch(`${API}${path}`, options);
