@@ -109,7 +109,7 @@ export default function ValidatorPanel({ runId, runData }) {
 
       // After rejection: poll until new draft is ready then reload
       if (data.decision === "reject") {
-        const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+        const API = getApiBase();
         let attempts = 0;
         const poll = setInterval(async () => {
           attempts++;
