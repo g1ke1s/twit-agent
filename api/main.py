@@ -22,13 +22,15 @@ logger = logging.getLogger(__name__)
 
 # ── Startup key check ─────────────────────────────────────────────────────────
 REQUIRED_KEYS = {
-
-    "GROQ_API_KEY":    "Groq console → console.groq.com → API Keys",
-    "MISTRAL_API_KEY": "Mistral console → console.mistral.ai → API Keys",
+    "GROQ_API_KEY":    "Groq console → console.groq.com → API Keys (analyst + critic via llama-stack)",
+    "GEMINI_API_KEY":  "Google AI Studio → aistudio.google.com → API Keys (writer iteration 1)",
+    "MISTRAL_API_KEY": "Mistral console → console.mistral.ai → API Keys (writer rewrite + LinkedIn formatter)",
 }
 OPTIONAL_KEYS = {
-    "GEMINI_API_KEY":   "Optional — add billing for higher limits",
-    "OPENROUTER_API_KEY": "openrouter.ai (needed for DeepSeek R1 + Qwen writers)",
+    "GROQ_API_KEY_2":     "Second Groq key — llama-stack fallback",
+    "GEMINI_API_KEY_2":   "Second Gemini key — fallback",
+    "CEREBRA_KEY":        "Cerebras — cerebras.ai (llama-stack provider 3)",
+    "OPENROUTER_API_KEY": "OpenRouter — openrouter.ai (llama-stack provider 4)",
     "TAVILY_API_KEY":     "tavily.com (web search — 1000 free/month)",
     "EXA_API_KEY":        "exa.ai (semantic search — free tier)",
     "SUPABASE_URL":       "Supabase project URL (needed for persistence)",

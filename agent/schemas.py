@@ -105,7 +105,9 @@ class Claim(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid4()))
     text: str
     source_url: str
+    source_id: str = ""          # e.g. "S1" — matches index in state["sources"]
     verified: bool = False
+    speculative: bool = False    # True when derived from a hypothetical/unverified premise
     surprise_score: float = Field(ge=1, le=10)
     contradiction_flag: bool = False
 
@@ -163,7 +165,9 @@ class Tweet(BaseModel):
 
 class CritiqueResult(BaseModel):
     hook_strength: float
-    voice_match: float
+    voice_match: Optional[float] = None    # null when no FAISS archive; excluded from average
+    originality: Optional[float] = None    # null when Tavily unavailable; < 6 vetoes verdict
+    concreteness: Optional[float] = None   # avg proper-nouns+numbers per tweet; < 5 vetoes verdict
     insight_density: float
     clarity: float
     hallucination_flags: list[str] = Field(default_factory=list)
@@ -241,6 +245,9 @@ class AgentState(TypedDict, total=False):
     hook_variants: list[HookVariant]
     thesis_options: list[str]
     chosen_thesis: str
+    obvious_takes: list[str]        # angle_finder: what everyone already says
+    contrarian_thesis: str          # angle_finder: defensible counter-claim
+    second_order: str               # angle_finder: consequence most people miss
     draft: list[Tweet] | str
     critique: Optional[CritiqueResult]
     validation: Optional[ValidationDecision]

@@ -21,8 +21,8 @@ router = APIRouter()
 
 # All pipeline node names — used for node_start/node_complete detection
 PIPELINE_NODES = {
-    "input_router", "voice_loader", "researcher", "analyst",
-    "hook_generator", "writer", "critic", "validator_gate",
+    "input_router", "researcher", "analyst", "angle_finder",
+    "writer", "critic", "validator_gate",
     "formatter", "distributor",
 }
 
@@ -97,16 +97,17 @@ async def _run_graph_stream(
             claims     = state_vals.get("claims", [])
 
             draft_payload = (
-                [t.dict() for t in draft] if isinstance(draft, list) else draft
+                [t.model_dump() for t in draft] if isinstance(draft, list) else draft
             )
-            critique_payload = critique.dict() if critique else {}
+            critique_payload = critique.model_dump() if critique else {}
             sources_payload  = [
                 {"url": s.url, "title": s.title, "credibility_score": s.credibility_score}
                 for s in sources
             ]
             claims_payload = [
                 {"id": c.id, "text": c.text, "verified": c.verified,
-                 "surprise_score": c.surprise_score, "source_url": c.source_url}
+                 "source_id": c.source_id, "surprise_score": c.surprise_score,
+                 "source_url": c.source_url}
                 for c in claims
             ]
 
@@ -155,25 +156,28 @@ async def generate_content(req: GenerateRequest):
     )
 
     initial_state: AgentState = {
-        "run_id":           run_id,
-        "user_id":          req.user_id,
-        "input_context":    input_ctx,
-        "voice_profile":    None,
-        "sources":          [],
-        "claims":           [],
-        "hook_variants":    [],
-        "thesis_options":   [],
-        "chosen_thesis":    "",
-        "draft":            [],
-        "critique":         None,
-        "validation":       None,
+        "run_id":             run_id,
+        "user_id":            req.user_id,
+        "input_context":      input_ctx,
+        "voice_profile":      None,
+        "sources":            [],
+        "claims":             [],
+        "hook_variants":      [],
+        "thesis_options":     [],
+        "chosen_thesis":      "",
+        "obvious_takes":      [],
+        "contrarian_thesis":  "",
+        "second_order":       "",
+        "draft":              [],
+        "critique":           None,
+        "validation":         None,
         "formatted_variants": None,
-        "final_output":     "",
-        "iteration_count":  0,
+        "final_output":       "",
+        "iteration_count":    0,
         "writer_instruction": "",
-        "trace":            [],
-        "status":           "starting",
-        "error":            None,
+        "trace":              [],
+        "status":             "starting",
+        "error":              None,
     }
 
     logger.info("[run:%s] New run user=%s output=%s", run_id[:8], req.user_id, req.output_type)

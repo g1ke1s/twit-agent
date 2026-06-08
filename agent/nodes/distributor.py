@@ -50,9 +50,9 @@ async def distributor_node(state: AgentState) -> dict:
             "claims":       [{"id": c.id, "text": c.text, "verified": c.verified,
                               "surprise_score": c.surprise_score}
                              for c in state.get("claims", [])],
-            "critique":     state.get("critique").dict() if state.get("critique") else None,
-            "validation":   state.get("validation").dict() if state.get("validation") else None,
-            "trace":        [e.dict() for e in state.get("trace", [])],
+            "critique":     state.get("critique").model_dump(mode="json") if state.get("critique") else None,
+            "validation":   state.get("validation").model_dump(mode="json") if state.get("validation") else None,
+            "trace":        [e.model_dump(mode="json") for e in state.get("trace", [])],
         }
 
         trace_path = traces_dir / f"trace_{run_id[:8]}.json"
