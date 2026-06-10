@@ -22,6 +22,15 @@ import re
 import time
 
 from agent.llm import call_gemini, call_mistral
+
+
+async def _gemini_or_mistral(prompt: str, system: str = "", max_tokens: int = 2000) -> str:
+    """Try Gemini; if it returns empty (rate-limited / failed), fall back to Mistral."""
+    raw = await call_gemini(prompt, system, max_tokens=max_tokens)
+    if not raw:
+        logger.warning("writer: Gemini returned empty — falling back to Mistral")
+        raw = await call_mistral(prompt, system, max_tokens=max_tokens)
+    return raw
 from agent.schemas import AgentState, Claim, OutputType, TraceEvent, Tweet, VoiceProfile
 
 logger = logging.getLogger(__name__)
@@ -201,7 +210,7 @@ async def writer_node(state: AgentState) -> dict:
 
     # ── Model selection ────────────────────────────────────────────────────────
     if iteration == 1:
-        _call    = call_gemini
+        _call    = _gemini_or_mistral
         provider = "gemini-2.0-flash"
     else:
         _call    = call_mistral
