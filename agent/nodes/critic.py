@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 MAX_ITERATIONS       = 2
 APPROVE_THRESHOLD    = 6.5
 ORIGINALITY_VETO     = 6.0   # below this → mandatory rewrite
-CONCRETENESS_VETO    = 5.0   # below this → mandatory rewrite (semantic abstraction score)
+CONCRETENESS_VETO    = 5.0   # below this → mandatory rewrite
 
 BANNED_RE = re.compile(
     r"\b(in conclusion|it's worth noting|as an ai|game.changer|dive into|delve|"
@@ -42,133 +42,40 @@ BANNED_RE = re.compile(
 _STOP = {"the", "a", "an", "is", "are", "of", "in", "to", "and", "or", "but",
          "for", "with", "this", "that", "was", "has", "be", "have", "at", "by"}
 
-# ── Semantic concreteness via MiniLM cosine similarity to abstraction centroid ──
-# Syntactic heuristics (Title-Case + number regex) miscount acronyms and miss
-# vapour sentences that contain proper nouns but say nothing specific.
-# MiniLM embeds the tweet and measures distance from a centroid of known-abstract
-# sentences. High similarity → abstract. Low similarity → concrete.
-
-_ABSTRACTION_CENTROID_SENTENCES = [
-    "The paradigm will shift.",
-    "AI will change everything.",
-    "The future is uncertain.",
-    "Technology is transforming industries.",
-    "This will have significant implications.",
-    "We are at an inflection point.",
-    "The landscape is evolving rapidly.",
-    "This creates both challenges and opportunities.",
-    "The impact cannot be overstated.",
-    "Everything will be different going forward.",
-    "This is a pivotal moment for the industry.",
-    "The implications are far-reaching.",
-    "Innovation is disrupting traditional models.",
-    "The world is changing faster than ever.",
-    "This represents a fundamental shift.",
-]
-
-_abstraction_centroid_vec = None  # cached after first call
-
-
-def _get_abstraction_centroid():
-    """Embed centroid sentences once, cache the mean vector."""
-    global _abstraction_centroid_vec
-    if _abstraction_centroid_vec is not None:
-        return _abstraction_centroid_vec
-    try:
-        import numpy as np
-        from memory.embedder import embed_texts
-        vecs = embed_texts(_ABSTRACTION_CENTROID_SENTENCES)
-        _abstraction_centroid_vec = np.mean(np.array(vecs), axis=0)
-        # Re-normalize so dot product == cosine
-        norm = np.linalg.norm(_abstraction_centroid_vec)
-        if norm > 0:
-            _abstraction_centroid_vec /= norm
-        logger.debug("critic: abstraction centroid cached (%d sentences)", len(_ABSTRACTION_CENTROID_SENTENCES))
-    except Exception as exc:
-        logger.debug("critic: could not build abstraction centroid: %s", exc)
-        _abstraction_centroid_vec = None
-    return _abstraction_centroid_vec
+_NUMBER_RE = re.compile(r'\b\d[\d,.%$x]*\b')
+_NOT_PROPER = {
+    "the", "a", "an", "this", "that", "it", "they", "we", "you", "i",
+    "if", "when", "as", "but", "and", "or", "so", "for", "in", "on",
+    "at", "by", "to", "of", "is", "are", "was", "will", "would", "could",
+    "should", "may", "might", "do", "does", "be", "have", "has", "had",
+}
 
 
 def _count_concrete_anchors(text: str) -> int:
-    """Kept for rewrite-instruction generation (names zero-anchor tweets).
-    Returns 0 when the sentence is in the abstraction zone (cosine ≥ 0.75),
-    otherwise falls back to a simple number+title-case count.
-    """
-    import re as _re
-    numbers = set(_re.findall(r'\b\d[\d,.%$x]*\b', text))
-    stop = {
-        "the", "a", "an", "this", "that", "it", "they", "we", "you", "i",
-        "if", "when", "as", "but", "and", "or", "so", "for", "in", "on",
-        "at", "by", "to", "of", "is", "are", "was", "will", "would", "could",
-        "should", "may", "might", "do", "does", "be", "have", "has", "had",
-    }
+    """Count concrete signals: distinct numbers + Title-Case proper nouns."""
+    numbers = set(_NUMBER_RE.findall(text))
     proper = {
-        _re.sub(r'[^a-zA-Z]', '', w).lower()
+        re.sub(r'[^a-zA-Z]', '', w).lower()
         for w in text.split()
-        if len(_re.sub(r'[^a-zA-Z]', '', w)) >= 2
-        and _re.sub(r'[^a-zA-Z]', '', w)[0].isupper()
-        and _re.sub(r'[^a-zA-Z]', '', w).lower() not in stop
+        if len(re.sub(r'[^a-zA-Z]', '', w)) >= 2
+        and re.sub(r'[^a-zA-Z]', '', w)[0].isupper()
+        and re.sub(r'[^a-zA-Z]', '', w).lower() not in _NOT_PROPER
     }
     return len(numbers) + len(proper)
 
 
 def _score_concreteness(draft) -> tuple[Optional[float], float]:
     """
-    Semantic concreteness via MiniLM cosine to abstraction centroid.
-    Per-tweet similarity ≥ 0.75 → abstract; < 0.45 → concrete.
-    Returns (score 1-10, avg_similarity). None for essay drafts.
-
-    Score mapping:
-      sim ≥ 0.75 → 2   (very abstract)
-      sim ≥ 0.60 → 4.5
-      sim ≥ 0.45 → 7
-      sim < 0.45 → 9   (concrete)
+    Syntactic concreteness: avg count of numbers + Title-Case proper nouns per tweet.
+    Returns (score 1-10, avg_anchors). None for essay drafts (str).
     """
     if not isinstance(draft, list) or not draft:
         return None, 0.0
-
-    centroid = _get_abstraction_centroid()
-    if centroid is None:
-        # MiniLM unavailable — fall back to syntactic count
-        counts = [_count_concrete_anchors(t.text) for t in draft]
-        avg    = sum(counts) / len(counts)
-        score  = 9.0 if avg >= 2 else (7.0 if avg >= 1 else (4.5 if avg >= 0.5 else 2.0))
-        logger.info("critic: concreteness (syntactic fallback) avg_anchors=%.2f score=%.1f", avg, score)
-        return round(score, 1), round(avg, 2)
-
-    try:
-        import numpy as np
-        from memory.embedder import embed_texts
-
-        texts = [t.text for t in draft]
-        vecs  = embed_texts(texts)          # unit-normalized by MiniLM
-        sims  = np.array(vecs) @ centroid   # cosine per tweet
-
-        avg_sim = float(sims.mean())
-        if avg_sim >= 0.75:
-            score = 2.0
-        elif avg_sim >= 0.60:
-            score = 4.5
-        elif avg_sim >= 0.45:
-            score = 7.0
-        else:
-            score = 9.0
-
-        logger.info(
-            "critic: concreteness (semantic) avg_sim=%.3f per_tweet=%s score=%.1f",
-            avg_sim,
-            [round(float(s), 3) for s in sims],
-            score,
-        )
-        return round(score, 1), round(avg_sim, 3)
-
-    except Exception as exc:
-        logger.warning("critic: semantic concreteness failed (%s) — syntactic fallback", exc)
-        counts = [_count_concrete_anchors(t.text) for t in draft]
-        avg    = sum(counts) / len(counts)
-        score  = 9.0 if avg >= 2 else (7.0 if avg >= 1 else (4.5 if avg >= 0.5 else 2.0))
-        return round(score, 1), round(avg, 2)
+    counts = [_count_concrete_anchors(t.text) for t in draft]
+    avg = sum(counts) / len(counts)
+    score = 9.0 if avg >= 2 else (7.0 if avg >= 1 else (4.5 if avg >= 0.5 else 2.0))
+    logger.info("critic: concreteness avg_anchors=%.2f score=%.1f", avg, score)
+    return round(score, 1), round(avg, 2)
 
 
 def _parse(text: str) -> dict:
@@ -384,8 +291,7 @@ Return JSON:
         insight_density = max(1.0, insight_density - len(cliche_flags) * 0.3)
 
     # ── Concreteness (local, zero cost — proper nouns + numbers per tweet) ───────
-    concreteness_score, avg_metric = _score_concreteness(draft)
-    # avg_metric is avg_similarity (semantic) or avg_anchors (syntactic fallback)
+    concreteness_score, avg_anchors = _score_concreteness(draft)
 
     # ── Originality check (Tavily search) and FAISS voice_match ──────────────
     obvious_takes = state.get("obvious_takes", [])
@@ -432,7 +338,7 @@ Return JSON:
                     if _count_concrete_anchors(t.text) == 0
                 ]
                 tips.append(
-                    f"CONCRETENESS FAIL (avg_sim={avg_metric:.3f}, score={concreteness_score:.0f}/10): "
+                    f"CONCRETENESS FAIL (avg_anchors={avg_anchors:.2f}, score={concreteness_score:.0f}/10): "
                     f"Every tweet must name a company, product, person, or number. "
                     f"Vapor tweets to rewrite: {'; '.join(abstract_tweets[:3])}. "
                     "Replace each with a sentence that names a specific actor."
@@ -491,7 +397,7 @@ Return JSON:
             f"avg={average_score:.2f} hook={hook_strength} "
             f"density={insight_density} clarity={clarity} "
             f"originality={originality_score} concreteness={concreteness_score} "
-            f"concreteness_metric={avg_metric:.3f} voice_match={voice_match_score} "
+            f"avg_anchors={avg_anchors:.2f} voice_match={voice_match_score} "
             f"verdict={verdict} trigger={veto_trigger} iter={iteration}"
         ),
     )
