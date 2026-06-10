@@ -157,7 +157,8 @@ export default function GeneratePanel({ onEvent, phase, runId, onReset }) {
           <p className="text-ink-100 font-medium text-sm">
             {isRunning  && "Pipeline running…"}
             {isAwaiting && "Draft ready for your review"}
-            {isDone     && "Run complete"}
+            {phase === "done"  && "Run complete"}
+            {phase === "error" && "Pipeline error — check logs"}
           </p>
           {runId && (
             <p className="text-ink-500 text-xs font-mono mt-0.5">{runId.slice(0,8)}…</p>

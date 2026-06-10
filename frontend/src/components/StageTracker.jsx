@@ -2,18 +2,17 @@
 import { useMemo } from "react";
 import Link from "next/link";
 
-// Pipeline stages in order
+// Pipeline stages — must match backend PIPELINE_NODES in api/routers/generate.py
 const STAGES = [
-  { id: "input_router",   label: "Parsing Input",     icon: "⊙",  color: "text-ink-300" },
-  { id: "voice_loader",   label: "Loading Voice",     icon: "◈",  color: "text-signal-teal" },
-  { id: "researcher",     label: "Researching",       icon: "⬡",  color: "text-signal-blue" },
-  { id: "analyst",        label: "Analysing Claims",  icon: "◎",  color: "text-signal-purple" },
-  { id: "hook_generator", label: "Generating Hooks",  icon: "◉",  color: "text-signal-amber" },
-  { id: "writer",         label: "Writing",           icon: "✦",  color: "text-signal-blue" },
-  { id: "critic",         label: "Critiquing",        icon: "◈",  color: "text-signal-red" },
-  { id: "validator_gate", label: "Human Review",      icon: "⊛",  color: "text-signal-amber" },
-  { id: "formatter",      label: "Formatting",        icon: "◻",  color: "text-signal-teal" },
-  { id: "distributor",    label: "Saving",            icon: "◆",  color: "text-signal-green" },
+  { id: "input_router",   label: "Parsing Input",    icon: "⊙",  color: "text-ink-300" },
+  { id: "researcher",     label: "Researching",      icon: "⬡",  color: "text-signal-blue" },
+  { id: "analyst",        label: "Analysing Claims", icon: "◎",  color: "text-signal-purple" },
+  { id: "angle_finder",   label: "Finding Angle",    icon: "◉",  color: "text-signal-amber" },
+  { id: "writer",         label: "Writing",          icon: "✦",  color: "text-signal-blue" },
+  { id: "critic",         label: "Critiquing",       icon: "◈",  color: "text-signal-red" },
+  { id: "validator_gate", label: "Human Review",     icon: "⊛",  color: "text-signal-amber" },
+  { id: "formatter",      label: "Formatting",       icon: "◻",  color: "text-signal-teal" },
+  { id: "distributor",    label: "Saving",           icon: "◆",  color: "text-signal-green" },
 ];
 
 function getStageStatus(stageId, completedNodes, activeNode, phase) {
@@ -203,6 +202,22 @@ export default function StageTracker({ events, phase, runId }) {
         <div className="px-6 pb-5 border-t border-ink-800/60 pt-5 animate-slide-up">
           <p className="text-signal-green text-sm font-medium">✓ Pipeline complete</p>
           <p className="text-ink-500 text-xs mt-1">Output formatted and saved.</p>
+        </div>
+      )}
+
+      {/* Error state */}
+      {phase === "error" && (
+        <div className="px-6 pb-5 border-t border-ink-800/60 pt-5 animate-slide-up">
+          {(() => {
+            const errEvt = [...events].reverse().find(e => e.type === "error");
+            const msg = errEvt?.data?.error || "An unexpected error occurred.";
+            return (
+              <>
+                <p className="text-signal-red text-sm font-medium">✗ Pipeline error</p>
+                <p className="text-ink-400 text-xs mt-1 font-mono break-all">{msg}</p>
+              </>
+            );
+          })()}
         </div>
       )}
     </div>
