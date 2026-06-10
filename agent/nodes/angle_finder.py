@@ -124,8 +124,12 @@ Return JSON (no other text):
   "chosen_angle": "<single sentence — names entities, is falsifiable, does not restate obvious_takes>"
 }}"""
 
+    logger.debug("angle_finder: prompt (first 300) = %r", prompt[:300])
     raw  = await call_llama_stack(prompt, system, max_tokens=520)
+    logger.debug("angle_finder: raw response (first 300) = %r", raw[:300])
     data = _parse(raw)
+    if not data:
+        logger.warning("angle_finder: JSON parse failed — full raw response: %s", raw)
 
     obvious_takes     = [str(t) for t in data.get("obvious_takes", []) if t][:3]
     contrarian_thesis = str(data.get("contrarian_thesis", "")).strip()

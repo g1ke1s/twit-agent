@@ -85,8 +85,12 @@ Return JSON:
 SOURCES:
 {sources_text}"""
 
+    logger.debug("analyst: prompt (first 300) = %r", prompt[:300])
     raw  = await call_llama_stack(prompt, system, max_tokens=1200)
+    logger.debug("analyst: raw response (first 300) = %r", raw[:300])
     data = _parse(raw)
+    if not data:
+        logger.warning("analyst: JSON parse failed — full raw response: %s", raw)
 
     valid_urls = {s.url for s in sources}
     claims: list[Claim] = []

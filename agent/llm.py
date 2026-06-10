@@ -67,7 +67,12 @@ async def call_llama_stack(prompt: str, system: str = "", max_tokens: int = 600)
             if not resp.is_success:
                 logger.error("llama-stack %s HTTP %s: %s", p["name"], resp.status_code, resp.text[:300])
                 continue
-            return resp.json()["choices"][0]["message"]["content"].strip()
+            text = resp.json()["choices"][0]["message"]["content"].strip()
+            logger.debug(
+                "llama-stack %s OK — len=%d preview=%r",
+                p["name"], len(text), text[:200],
+            )
+            return text
         except Exception as exc:
             logger.error("llama-stack %s exception: %s", p["name"], exc)
             continue
@@ -113,7 +118,12 @@ async def call_gemini(prompt: str, system: str = "", max_tokens: int = 2000) -> 
             if not candidates:
                 logger.warning("call_gemini: no candidates — %s", resp.json().get("promptFeedback", ""))
                 continue
-            return candidates[0]["content"]["parts"][0]["text"].strip()
+            text = candidates[0]["content"]["parts"][0]["text"].strip()
+            logger.debug(
+                "call_gemini key ...%s OK — len=%d preview=%r",
+                key[-4:], len(text), text[:200],
+            )
+            return text
         except Exception as exc:
             logger.error("call_gemini exception: %s", exc)
             continue
@@ -155,7 +165,9 @@ async def call_mistral(prompt: str, system: str = "", max_tokens: int = 2000) ->
         if not resp.is_success:
             logger.error("call_mistral HTTP %s: %s", resp.status_code, resp.text[:300])
             return ""
-        return resp.json()["choices"][0]["message"]["content"].strip()
+        text = resp.json()["choices"][0]["message"]["content"].strip()
+        logger.debug("call_mistral OK — len=%d preview=%r", len(text), text[:200])
+        return text
     except Exception as exc:
         logger.error("call_mistral exception: %s", exc)
         return ""

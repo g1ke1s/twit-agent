@@ -354,8 +354,12 @@ USE THESE AS EVIDENCE:
 JSON array (1-3 items only):
 [{{"position": 1, "text": "...", "char_count": N, "claim_ids": [], "is_hook": true, "is_cta": false}}]"""
 
+        logger.debug("writer[quote_rt]: prompt (first 300) = %r", prompt[:300])
         raw   = await _call(prompt, system, max_tokens=600)
+        logger.debug("writer[quote_rt]: raw response (first 300) = %r", raw[:300])
         draft = _parse_tweets(raw)
+        if not draft:
+            logger.warning("writer[quote_rt]: _parse_tweets returned empty — full raw: %s", raw)
         draft = _dedup_tweets(draft)   # BUG 2 FIX
 
         if not draft:
@@ -409,8 +413,12 @@ USE THESE AS EVIDENCE (each tweet advances the argument, doesn't just list facts
 JSON array (exactly 6-8 tweets):
 [{{"position": 1, "text": "...", "char_count": N, "claim_ids": [], "is_hook": true, "is_cta": false}}]"""
 
+        logger.debug("writer[x_thread]: prompt (first 300) = %r", prompt[:300])
         raw   = await _call(prompt, system, max_tokens=1500)
+        logger.debug("writer[x_thread]: raw response (first 300) = %r", raw[:300])
         draft = _parse_tweets(raw)
+        if not draft:
+            logger.warning("writer[x_thread]: _parse_tweets returned empty — full raw: %s", raw)
         draft = _dedup_tweets(draft)   # BUG 2 FIX
 
         # BUG 6 FIX: enforce 6-tweet minimum — pad with claim-based evidence tweets
@@ -533,7 +541,9 @@ USE THESE AS EVIDENCE — argue the thesis, don't narrate the claims:
 
 Write a {output_type.value.replace('_', ' ')} in markdown. Start immediately with the hook — no title, no preamble."""
 
+        logger.debug("writer[essay]: prompt (first 300) = %r", prompt[:300])
         raw   = await _call(prompt, system, max_tokens=2000)
+        logger.debug("writer[essay]: raw response (first 300) = %r", raw[:300] if raw else "")
         draft = raw if raw else f"# {thesis}\n\n" + "\n\n".join(c.text for c in claims)
 
         if isinstance(draft, str):
